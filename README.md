@@ -6,7 +6,21 @@
 [![Maintenance](https://img.shields.io/maintenance/yes/2020)](https://github.com/hrueger/redundancyjs/commits)
 
 This is a simple and easy to use CLI to copy code files programatically.
-ToDo
+
+## Usage
+Create a file called `redundancy.json` in the root fodler of your project. It has to look like this:
+```json
+{
+    "version": 1,
+    "files": [
+        {
+            "src": "AGtiv/src/app/data/ways.ts",
+            "dest": "api/src/data/ways.ts"
+        }
+    ]
+}
+```
+Then, run `npx redundancyjs`.
 
 ## License
 MIT
