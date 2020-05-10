@@ -1,0 +1,36 @@
+{
+    "name": "redundancyjs",
+    "version": "0.0.1",
+    "description": "A cli tool to copy code files programatically.",
+    "main": "src/index.js",
+    "bin": {
+        "@hrueger/redundancyjs": "bin/redundancyjs",
+        "redundancyjs": "bin/redundancyjs"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "src/"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hrueger/redundancyjs.git"
+    },
+    "keywords": [
+        "redundancy",
+        "sync",
+        "copy",
+        "cli"
+    ],
+    "author": "H. Rüger",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/hrueger/redundancyjs/issues"
+    },
+    "homepage": "https://github.com/hrueger/redundancyjs#readme",
+    "dependencies": {
+        "esm": "^3.2.25",
+        "find-up": "^4.1.0"
+    }
+}
