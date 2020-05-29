@@ -22,5 +22,16 @@ Create a file called `redundancy.json` in the root fodler of your project. It ha
 ```
 Then, run `npx redundancyjs`.
 
+You can also copy multiple files:
+```json
+{
+    "version": 1,
+    "files": [{
+        "src": "api/src/entity/*.ts",
+        "dest": "frontend/src/app/_models/"
+    }]
+}
+```
+
 ## License
 MIT

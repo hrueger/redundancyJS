@@ -2,6 +2,7 @@ const findUp = require("find-up");
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const glob = require('glob');
 
 function getVersion() {
     return JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"))).version;
@@ -22,9 +23,32 @@ export async function cli(args) {
         try {
             const content = JSON.parse(fs.readFileSync(configJsonPath));
             const baseDir = path.dirname(configJsonPath);
-            for (let file of content.files) {
+            const files = [];
+            for (const file of content.files) {
                 file.src = path.join(baseDir, file.src);
                 file.dest = path.join(baseDir, file.dest);
+                if ((file.src.match(/\*/g) || []).length > 1) {
+                    throw Error("The source path can't contain more than one *.");
+                }
+                if ((file.dest.match(/\*/g) || []).length > 0) {
+                    throw Error("The dest path can't contain a *.");
+                }
+                const fls = glob.sync(file.src);
+                if (fls.length) {
+                    for (let f of fls) {
+                        f = path.normalize(f);
+                        files.push({
+                            src: f,
+                            dest: path.join(f.replace(f.split(("*")[0]), file.dest), path.basename(f)),
+                            removeDecorators: file.removeDecorators,
+                        });
+                    }
+                } else {
+                    files.push(file);
+                }
+
+            }
+            for (let file of files) {
                 const readFile = readline.createInterface({
                     input: fs.createReadStream(file.src),
                     output: fs.createWriteStream(file.dest),
