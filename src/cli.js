@@ -1,5 +1,6 @@
 const findUp = require("find-up");
 const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 
 function getVersion() {
@@ -20,7 +21,10 @@ export async function cli(args) {
     if (configJsonPath) {
         try {
             const content = JSON.parse(fs.readFileSync(configJsonPath));
-            for (const file of content.files) {
+            const baseDir = path.dirname(configJsonPath);
+            for (let file of content.files) {
+                file.src = path.join(baseDir, file.src);
+                file.dest = path.join(baseDir, file.dest);
                 const readFile = readline.createInterface({
                     input: fs.createReadStream(file.src),
                     output: fs.createWriteStream(file.dest),
