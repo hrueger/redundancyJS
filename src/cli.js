@@ -8,6 +8,8 @@ function getVersion() {
     return JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"))).version;
 }
 
+let removeDecorators = false;
+
 export async function cli(args) {
     if (args[2] == "help" || args[2] == "--help") {
         console.log(chalk.green("Help:\nPlease see https://github.com/hrueger/redundancyjs/blob/master/README.md"));
@@ -49,6 +51,7 @@ export async function cli(args) {
 
             }
             for (let file of files) {
+                removeDecorators = file.removeDecorators;
                 const readFile = readline.createInterface({
                     input: fs.createReadStream(file.src),
                     output: fs.createWriteStream(file.dest),
@@ -84,6 +87,10 @@ function transform(line) {
 /*    +-----------------------------------------------------------------------+    */
 
 `)
+    }
+    if (removeDecorators) {
+        console.log("remove d");
+        line = line.replace(/@[^(]*\([^)]*\)/g, "");
     }
     this.output.write(`/* do not edit */${line ? ` ${line}` : ""}\n`);
 }

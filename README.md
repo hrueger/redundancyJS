@@ -33,5 +33,17 @@ You can also copy multiple files:
 }
 ```
 
+Remove TypeScript decorators:
+```json
+{
+    "version": 1,
+    "files": [{
+        "src": "api/src/entity/*.ts",
+        "dest": "frontend/src/app/_models/",
+        "removeDecorators": true
+    }]
+}
+```
+
 ## License
 MIT
