@@ -57,5 +57,17 @@ Remove methods:
 }
 ```
 
+Remove imports:
+```json
+{
+    "version": 1,
+    "files": [{
+        "src": "api/src/entity/*.ts",
+        "dest": "frontend/src/app/_models/",
+        "removeImports": ["coolPackage", "lodash"]
+    }]
+}
+```
+
 ## License
 MIT

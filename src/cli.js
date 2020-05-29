@@ -42,6 +42,7 @@ export async function cli(args) {
                             dest: path.join(f.replace(f.split(("*")[0]), file.dest), path.basename(f)),
                             removeDecorators: file.removeDecorators,
                             removeMethods: file.removeMethods,
+                            removeImports: file.removeImports,
                         });
                     }
                 } else {
@@ -61,8 +62,7 @@ export async function cli(args) {
                         resolve();
                     });
                 });
-                console.log(file);
-                if (file.removeDecorators || file.removeMethods) {
+                if (file.removeDecorators || file.removeMethods || file.removeImports) {
                     let data = fs.readFileSync(file.dest).toString();
                     if (file.removeDecorators) {
                         data = data.replace(/@[^(]*\([^)]*\)/g, "");
@@ -72,7 +72,15 @@ export async function cli(args) {
                             data = data.replace(new RegExp(`(public )*(private )*${name}\(.*\) {(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}`, "g"), "");
                         }
                     }
-                    console.log(data);
+                    if (file.removeImports && file.removeImports.length > 0) {
+                        for (const name of file.removeImports) {
+                            data = data.replace(new RegExp(`import\\s+?(?:(?:(?:[\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g"), "");
+                            data = data.replace(new RegExp(`import {[^}]*}.*"${name}";?`, "g"), "");
+                            data = data.replace(new RegExp(`import {[^}]*}.*'${name}';?`, "g"), "");
+                            console.log(data);
+                        }
+                    }
+                    //console.log(data);
                     fs.writeFileSync(file.dest, data);
                 }
             }
