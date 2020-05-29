@@ -45,5 +45,17 @@ Remove TypeScript decorators:
 }
 ```
 
+Remove methods:
+```json
+{
+    "version": 1,
+    "files": [{
+        "src": "api/src/entity/*.ts",
+        "dest": "frontend/src/app/_models/",
+        "removeMethods": ["myMethodName", "anotherMethod", "doThis"]
+    }]
+}
+```
+
 ## License
 MIT

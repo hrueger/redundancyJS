@@ -41,6 +41,7 @@ export async function cli(args) {
                             src: f,
                             dest: path.join(f.replace(f.split(("*")[0]), file.dest), path.basename(f)),
                             removeDecorators: file.removeDecorators,
+                            removeMethods: file.removeMethods,
                         });
                     }
                 } else {
@@ -60,9 +61,19 @@ export async function cli(args) {
                         resolve();
                     });
                 });
-
-                if (file.removeDecorators) {
-                    fs.writeFileSync(file.dest, fs.readFileSync(file.dest).toString().replace(/@[^(]*\([^)]*\)/g, ""));
+                console.log(file);
+                if (file.removeDecorators || file.removeMethods) {
+                    let data = fs.readFileSync(file.dest).toString();
+                    if (file.removeDecorators) {
+                        data = data.replace(/@[^(]*\([^)]*\)/g, "");
+                    }
+                    if (file.removeMethods && file.removeMethods.length > 0) {
+                        for (const name of file.removeMethods) {
+                            data = data.replace(new RegExp(`(public )*(private )*${name}\(.*\) {(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}`, "g"), "");
+                        }
+                    }
+                    console.log(data);
+                    fs.writeFileSync(file.dest, data);
                 }
             }
         } catch (e) {
