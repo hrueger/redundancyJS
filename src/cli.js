@@ -77,10 +77,8 @@ export async function cli(args) {
                             data = data.replace(new RegExp(`import\\s+?(?:(?:(?:[\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g"), "");
                             data = data.replace(new RegExp(`import {[^}]*}.*"${name}";?`, "g"), "");
                             data = data.replace(new RegExp(`import {[^}]*}.*'${name}';?`, "g"), "");
-                            console.log(data);
                         }
                     }
-                    //console.log(data);
                     fs.writeFileSync(file.dest, data);
                 }
             }
