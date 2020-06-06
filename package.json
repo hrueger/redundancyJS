@@ -1,6 +1,6 @@
 {
     "name": "redundancyjs",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "A cli tool to copy code files programatically.",
     "main": "src/index.js",
     "bin": {
@@ -30,6 +30,7 @@
     },
     "homepage": "https://github.com/hrueger/redundancyjs#readme",
     "dependencies": {
+        "chokidar": "^3.4.0",
         "esm": "^3.2.25",
         "find-up": "^4.1.0",
         "glob": "^7.1.6"

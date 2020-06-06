@@ -22,6 +22,8 @@ Create a file called `redundancy.json` in the root fodler of your project. It ha
 ```
 Then, run `npx redundancyjs`.
 
+You can watch for changes and automatically copy the files with `npx redundancyjs --watch` or `npx redundancyjs -w`.
+
 You can also copy multiple files:
 ```json
 {

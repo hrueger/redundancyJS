@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const glob = require('glob');
+const chokidar = require('chokidar');
 
 function getVersion() {
     return JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"))).version;
@@ -16,6 +17,11 @@ export async function cli(args) {
     if (args[2] == "version" || args[2] == "--version") {
         console.log(chalk.green(`v${getVersion()}`));
         process.exit();
+    }
+
+    let watching = false;
+    if (args[2] == "watch" || args[2] == "--watch" || args[2] == "-w") {
+        watching = true;
     }
 
     const configJsonPath = await findUp("redundancy.json");
@@ -48,39 +54,15 @@ export async function cli(args) {
                 } else {
                     files.push(file);
                 }
-
             }
-            for (let file of files) {
-                const readFile = readline.createInterface({
-                    input: fs.createReadStream(file.src),
-                    output: fs.createWriteStream(file.dest),
-                    terminal: false
+            await run(files);
+            if (watching) {
+                console.log("Watching files...")
+                chokidar.watch(files.map((f) => f.src)).on("change", async() => {
+                    process.stdout.write("File change detected, copying... ")
+                    await run(files);
+                    console.log("Done");
                 });
-
-                await new Promise((resolve, reject) => {
-                    readFile.on('line', transform).on('close', () => {
-                        resolve();
-                    });
-                });
-                if (file.removeDecorators || file.removeMethods || file.removeImports) {
-                    let data = fs.readFileSync(file.dest).toString();
-                    if (file.removeDecorators) {
-                        data = data.replace(/@[^(]*\([^)]*\)/g, "");
-                    }
-                    if (file.removeMethods && file.removeMethods.length > 0) {
-                        for (const name of file.removeMethods) {
-                            data = data.replace(new RegExp(`(public )*(private )*${name}\(.*\) {(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}`, "g"), "");
-                        }
-                    }
-                    if (file.removeImports && file.removeImports.length > 0) {
-                        for (const name of file.removeImports) {
-                            data = data.replace(new RegExp(`import\\s+?(?:(?:(?:[\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g"), "");
-                            data = data.replace(new RegExp(`import {[^}]*}.*"${name}";?`, "g"), "");
-                            data = data.replace(new RegExp(`import {[^}]*}.*'${name}';?`, "g"), "");
-                        }
-                    }
-                    fs.writeFileSync(file.dest, data);
-                }
             }
         } catch (e) {
             console.log(e);
@@ -89,6 +71,40 @@ export async function cli(args) {
     } else {
         console.log("Error: no \"redundancy.json\" file was found.");
         process.exit(1);
+    }
+}
+
+async function run(files) {
+    for (let file of files) {
+        const readFile = readline.createInterface({
+            input: fs.createReadStream(file.src),
+            output: fs.createWriteStream(file.dest),
+            terminal: false
+        });
+        await new Promise((resolve, reject) => {
+            readFile.on('line', transform).on('close', () => {
+                resolve();
+            });
+        });
+        if (file.removeDecorators || file.removeMethods || file.removeImports) {
+            let data = fs.readFileSync(file.dest).toString();
+            if (file.removeDecorators) {
+                data = data.replace(/@[^(]*\([^)]*\)/g, "");
+            }
+            if (file.removeMethods && file.removeMethods.length > 0) {
+                for (const name of file.removeMethods) {
+                    data = data.replace(new RegExp(`(public )*(private )*${name}\(.*\) {(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}`, "g"), "");
+                }
+            }
+            if (file.removeImports && file.removeImports.length > 0) {
+                for (const name of file.removeImports) {
+                    data = data.replace(new RegExp(`import\\s+?(?:(?:(?:[\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g"), "");
+                    data = data.replace(new RegExp(`import {[^}]*}.*"${name}";?`, "g"), "");
+                    data = data.replace(new RegExp(`import {[^}]*}.*'${name}';?`, "g"), "");
+                }
+            }
+            fs.writeFileSync(file.dest, data);
+        }
     }
 }
 
