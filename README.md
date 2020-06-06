@@ -15,7 +15,7 @@ Create a file called `redundancy.json` in the root fodler of your project. It ha
     "files": [
         {
             "src": "AGtiv/src/app/data/ways.ts",
-            "dest": "api/src/data/ways.ts"
+            "dest": "api/src/data/"
         }
     ]
 }
