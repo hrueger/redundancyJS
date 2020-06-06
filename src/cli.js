@@ -89,7 +89,7 @@ async function run(files) {
         if (file.removeDecorators || file.removeMethods || file.removeImports) {
             let data = fs.readFileSync(file.dest).toString();
             if (file.removeDecorators) {
-                data = data.replace(/@[^(]*\([^)]*\)/g, "");
+                data = data.replace(/@[^(]*\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)/g, "");
             }
             if (file.removeMethods && file.removeMethods.length > 0) {
                 for (const name of file.removeMethods) {
