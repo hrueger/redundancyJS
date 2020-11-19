@@ -71,5 +71,17 @@ Remove imports:
 }
 ```
 
+Change imported types from libraries to `any`:
+```json
+{
+    "version": 1,
+    "files": [{
+        "src": "api/src/entity/*.ts",
+        "dest": "frontend/src/app/_models/",
+        "changeInports": ["uncoolPackage"]
+    }]
+}
+```
+
 ## License
 MIT

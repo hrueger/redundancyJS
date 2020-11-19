@@ -1,7 +1,6 @@
 const findUp = require("find-up");
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
 const glob = require('glob');
 const chokidar = require('chokidar');
 
@@ -49,6 +48,7 @@ export async function cli(args) {
                             removeDecorators: file.removeDecorators,
                             removeMethods: file.removeMethods,
                             removeImports: file.removeImports,
+                            changeImports: file.changeImports,
                         });
                     }
                 } else {
@@ -76,7 +76,39 @@ export async function cli(args) {
 
 async function run(files) {
     for (let file of files) {
-        const content = fs.readFileSync(file.src).toString();
+        let content = fs.readFileSync(file.src).toString();
+
+        if (file.removeDecorators || file.removeMethods || file.removeImports || file.changeImports) {
+            if (file.removeDecorators) {
+                content = content.replace(/@[^(]*\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)/g, "");
+            }
+            if (file.removeMethods && file.removeMethods.length > 0) {
+                for (const name of file.removeMethods) {
+                    content = content.replace(new RegExp(`(public )*(private )*${name}\(.*\) {(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}`, "g"), "");
+                }
+            }
+            if (file.removeImports && file.removeImports.length > 0) {
+                for (const name of file.removeImports) {
+                    content = content.replace(new RegExp(`import\\s+?(?:(?:(?:[\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g"), "");
+                    content = content.replace(new RegExp(`import {[^}]*}.*"${name}";?`, "g"), "");
+                    content = content.replace(new RegExp(`import {[^}]*}.*'${name}';?`, "g"), "");
+                }
+            }
+            if (file.changeImports && file.changeImports.length > 0) {
+                for (const name of file.changeImports) {
+                    const typeString = new RegExp(`import\\s+?(?:(?:([\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g").exec(content);
+                    content = content.replace(new RegExp(`import\\s+?(?:(?:(?:[\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g"), "");
+                    if (typeString && typeString[1] && typeString[1].startsWith("{") && typeString[1].endsWith("}")) {
+                        const types = typeString[1].replace(/{|}/g, "").trim().split(",").map((t) => t.trim());
+                        for (const t of types) {
+                            console.log("replacing", t);
+                            content = content.replace(new RegExp(`(?:(${t}<[^>]*?>)|(${t}))([,;\[\)])`, "g"), "any$3");
+                        }
+                    }
+                }
+            }
+        }
+
         const lines = content.split("\n");
         let first = true;
         const newLines = [];
@@ -88,23 +120,6 @@ async function run(files) {
             newLines.push(line);
         }
         let data = newLines.join("\n");
-        if (file.removeDecorators || file.removeMethods || file.removeImports) {
-            if (file.removeDecorators) {
-                data = data.replace(/@[^(]*\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)/g, "");
-            }
-            if (file.removeMethods && file.removeMethods.length > 0) {
-                for (const name of file.removeMethods) {
-                    data = data.replace(new RegExp(`(public )*(private )*${name}\(.*\) {(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}`, "g"), "");
-                }
-            }
-            if (file.removeImports && file.removeImports.length > 0) {
-                for (const name of file.removeImports) {
-                    data = data.replace(new RegExp(`import\\s+?(?:(?:(?:[\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g"), "");
-                    data = data.replace(new RegExp(`import {[^}]*}.*"${name}";?`, "g"), "");
-                    data = data.replace(new RegExp(`import {[^}]*}.*'${name}';?`, "g"), "");
-                }
-            }
-        }
         fs.writeFileSync(file.dest, data);
     }
 }
