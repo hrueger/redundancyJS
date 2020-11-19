@@ -30,9 +30,9 @@
     },
     "homepage": "https://github.com/hrueger/redundancyjs#readme",
     "dependencies": {
-        "chokidar": "^3.4.0",
+        "chokidar": "^3.4.3",
         "esm": "^3.2.25",
-        "find-up": "^4.1.0",
+        "find-up": "^5.0.0",
         "glob": "^7.1.6"
     }
 }
