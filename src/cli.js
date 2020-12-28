@@ -101,7 +101,7 @@ async function run(files) {
                     if (typeString && typeString[1] && typeString[1].startsWith("{") && typeString[1].endsWith("}")) {
                         const types = typeString[1].replace(/{|}/g, "").trim().split(",").map((t) => t.trim());
                         for (const t of types) {
-                            content = content.replace(new RegExp(`(?:(${t}<[^>]*?>)|(${t}))([,;\[\)])`, "g"), "any$3");
+                            content = content.replace(new RegExp(`(?:(${t}<[^>]*?>)|(${t}))([,;\[\)>])`, "g"), "any$3");
                         }
                     }
                 }
