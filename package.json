@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "description": "A cli tool to copy code files programatically.",
     "main": "src/index.js",
+    "type": "module",
     "bin": {
         "@hrueger/redundancyjs": "bin/redundancyjs",
         "redundancyjs": "bin/redundancyjs"

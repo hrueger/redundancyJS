@@ -1,12 +1,9 @@
-const findUp = require("find-up");
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
-const chokidar = require('chokidar');
-
-function getVersion() {
-    return JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"))).version;
-}
+import findUp from "find-up";
+import fs from "fs";
+import path from "path";
+import glob from "glob";
+import chokidar from "chokidar";
+import packageJson from "../package.json" with { type: "json" };
 
 export async function cli(args) {
     if (args[2] == "help" || args[2] == "--help") {
@@ -14,7 +11,7 @@ export async function cli(args) {
         process.exit();
     }
     if (args[2] == "version" || args[2] == "--version") {
-        console.log(chalk.green(`v${getVersion()}`));
+        console.log(chalk.green(`v${packageJson.version}`));
         process.exit();
     }
 
@@ -44,7 +41,7 @@ export async function cli(args) {
                         f = path.normalize(f);
                         files.push({
                             src: f,
-                            dest: path.join(f.replace(f.split(("*")[0]), file.dest), path.basename(f)),
+                            dest: path.join(f.replace(f.split("*"[0]), file.dest), path.basename(f)),
                             removeDecorators: file.removeDecorators,
                             removeMethods: file.removeMethods,
                             removeImports: file.removeImports,
@@ -57,9 +54,9 @@ export async function cli(args) {
             }
             await run(files);
             if (watching) {
-                console.log("Watching files...")
-                chokidar.watch(files.map((f) => f.src)).on("change", async() => {
-                    process.stdout.write("File change detected, copying... ")
+                console.log("Watching files...");
+                chokidar.watch(files.map((f) => f.src)).on("change", async () => {
+                    process.stdout.write("File change detected, copying... ");
                     await run(files);
                     console.log("Done");
                 });
@@ -69,7 +66,7 @@ export async function cli(args) {
             process.exit(1);
         }
     } else {
-        console.log("Error: no \"redundancy.json\" file was found.");
+        console.log('Error: no "redundancy.json" file was found.');
         process.exit(1);
     }
 }
@@ -99,7 +96,11 @@ async function run(files) {
                     const typeString = new RegExp(`import\\s+?(?:(?:([\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g").exec(content);
                     content = content.replace(new RegExp(`import\\s+?(?:(?:(?:[\\w*\\s{},]*)\\s+from\\s+?)|)(?:(?:"${name}")|(?:'${name}'))[\\s]*?(?:;|$|)`, "g"), "");
                     if (typeString && typeString[1] && typeString[1].startsWith("{") && typeString[1].endsWith("}")) {
-                        const types = typeString[1].replace(/{|}/g, "").trim().split(",").map((t) => t.trim());
+                        const types = typeString[1]
+                            .replace(/{|}/g, "")
+                            .trim()
+                            .split(",")
+                            .map((t) => t.trim());
                         for (const t of types) {
                             content = content.replace(new RegExp(`(?:(${t}<[^>]*?>)|(${t}))([,;\[\)>])`, "g"), "any$3");
                         }
